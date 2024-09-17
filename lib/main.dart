@@ -1,3 +1,4 @@
+import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -55,16 +56,43 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  int counter = 0;
+  int value = 0;
+  int taps = 0;
+  int requests = 0;
+  final mainList = [0, 1, 1, 2, 3];
+  int startIndex = 4;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+  @override
+  void initState() {
+    for (var i = 5; i < 51; ++i) {
+      final prevIndex = i - 1;
+      final prevValue = mainList[prevIndex];
+      final nextValue = prevValue + mainList[prevIndex - 1];
+      mainList.add(nextValue);
+    }
+    print(mainList);
+    super.initState();
+  }
+
+  int apiEndpoint(int position) {
+    if (position < 0 || position > 50) return 0;
+    final pickedValue = mainList[position];
+    print('\n');
+    print('Value at position ${position + 1} is $pickedValue'.toUpperCase());
+    setState(() => value = pickedValue);
+    return pickedValue;
+  }
+
+  void mockAPIrequest() {
+    setState(() => taps++);
+    print('\n');
+    print('>>> Times button tapped: $taps <<<');
+    EasyDebounce.debounce('request', const Duration(milliseconds: 1500), () {
+      requests++;
+      print('\n');
+      print('total api request: $requests'.toUpperCase());
+      apiEndpoint(counter++);
     });
   }
 
@@ -104,19 +132,16 @@ class _MyHomePageState extends State<MyHomePage> {
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
+          children: [
             Text(
-              '$_counter',
+              '$value',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () => mockAPIrequest(),
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
